@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            background: rgb(142, 233, 203);
+
+        }
+
+        p {
+            text-align: center;
+            font-size: 40px;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            color: white;
+            text-shadow: 0 0 5px rgb(4, 85, 81);
+        }
+
+        .container {
+            width: 900px;
+            margin: auto;
+        }
+
+        .boxs {
+            border-radius: 10px;
+            float: left;
+            text-align: center;
+            font-family: "微軟正黑體";
+            font-weight: bolder;
+            color: rgb(62, 165, 151);
+        }
+
+        #boxLeft {
+            width: 200px;
+            height: 200px;
+            background-color: rgb(255, 255, 255);
+            margin: 130px 5px;
+            font-size: 18px;
+            line-height: 100px;
+        }
+
+        #boxRight {
+            width: 200px;
+            height: 200px;
+            background-color: rgb(255, 255, 255);
+            margin: 130px 5px;
+            font-size: 18px;
+            line-height: 66px;
+        }
+
+        #btn-start {
+            height: 50px;
+            width: 80px;
+            border-radius: 10px;
+            background-color: rgb(67, 163, 155);
+            color: white;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        }
+
+        #game {
+            border: azure;
+        }
+
+        .hole {
+            width: 150px;
+            height: 150px;
+            background-image: url(./egg.png);
+            cursor: url(./ami.png) 50 50, auto;
+
+        }
+
+        .red {
+            background: url(./bunny.png) center;
+        }
+
+        .blue {
+            background: url(./bunny2.png) center;
+        }
+
+
+
+
+        .animation {
+
+            animation-name: animation;
+
+            animation-duration: 1s;
+
+            animation-iteration-count: infinite;
+
+            animation-timing-function: linear;
+
+            animation-delay: 0.5s;
+            animation-direction: alternate;
+
+        }
+
+        @keyframes animation {
+            0% {
+                transform: rotate(0deg);
+                text-shadow: 0 0 5px rgb(4, 85, 81);
+            }
+
+            50% {
+                transform: rotate(3deg);
+                text-shadow: 0 0 5px rgb(143, 158, 4);
+            }
+
+            100% {
+                transform: rotate(-3deg);
+                text-shadow: 0 0 5px rgb(218, 38, 92);
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+    <p class="animation">Catch the easter BUNNY!</p>
+    <div class="container">
+        <div id="boxLeft" class="boxs">
+            目前分數：<span id="text-score">0</span><br>
+            剩餘時間：<span id="text-time">10</span>
+        </div>
+
+        <div class="boxs">
+
+            <table id="game" border="1">
+                <tr>
+                    <td class="hole" id="hole7"></td>
+                    <td class="hole" id="hole8"></td>
+                    <td class="hole" id="hole9"></td>
+                </tr>
+                <tr>
+                    <td class="hole" id="hole4"></td>
+                    <td class="hole" id="hole5"></td>
+                    <td class="hole" id="hole6"></td>
+                </tr>
+                <tr>
+                    <td class="hole" id="hole1"></td>
+                    <td class="hole" id="hole2"></td>
+                    <td class="hole" id="hole3"></td>
+                </tr>
+            </table>
+            <input type="button" value="START" id="btn-start"><br>
+        </div>
+        <div id="boxRight" class="boxs">
+            最高分：<br>
+            玩家：<span id="text-highplayer">沒有人</span><br>
+            分數：<span id="text-highscore">0</span>
+        </div>
+    </div>
+
+
+    <script>
+        const holes = document.getElementsByClassName("hole");
+        const btnStart = document.getElementById("btn-start");
+        const textScore = document.getElementById("text-score");
+        const textTime = document.getElementById("text-time");
+        const textHighPlayer = document.getElementById("text-highplayer");
+        const textHighscore = document.getElementById("text-highscore");
+        // 音效
+        const rihai = new Audio();
+        rihai.src = "./rihai.mp3"
+        const swing = new Audio();
+        swing.src = "./swing.mp3"
+
+        let score = 0;
+        // 是否在遊戲中
+        let inGame = false;
+        // 剩餘時間
+        let timeLeft = 10;
+        // clearTimeout 會把變數一起清掉，這時只要把TIMER指定為0再套入function，clear後TIMER就會歸0
+        let timer = 0;
+        // 最高分
+        let highscore = { name: '', score: 0 }
+        // 將localStorage存的文字轉成可以使用的陣列
+        let storage = JSON.parse(localStorage.getItem("highscore"));
+        // 如果有分數紀錄
+        if (storage !== null) {
+            // 將最高分記錄存入變數並修改網頁文字
+            highscore.name = storage.name;
+            textHighPlayer.innerText = highscore.name;
+            highscore.score = storage.score;
+            textHighscore.innerText = highscore.score;
+        }
+
+        btnStart.onclick = () => {
+            // 遊戲開始後，START就要停用
+            btnStart.disabled = true;
+            // 設定時間倒數每秒變化一次
+            timer = setInterval(game, 1000)
+            game();
+            // 重置分數
+            score = 0;
+            textScore.innerText = score;
+            // 設定狀態為遊戲中
+            inGame = true;
+            // 重設時間
+            timeLeft = 10;
+            textTime.innerText = timeLeft;
+        }
+
+        const game = () => {
+            // 清掉格子的CLASS
+            for (let hole of holes) {
+                hole.classList.remove("red");
+                hole.classList.remove("blue");
+            }
+            // 隨機抽三格變紅色
+            for (let i = 0; i < 3; i++) {
+                const rand = Math.floor(Math.random() * 9);
+                holes[rand].classList.add("red");
+            }
+            // 時間減一
+            timeLeft--;
+            textTime.innerText = timeLeft;
+
+            // 如果時間到了
+            if (timeLeft == 0) {
+                // 設定狀態為不再遊戲中
+                inGame = false;
+                // 停止計時器
+                clearInterval(timer);
+                // 清除格子的CLASS
+                for (let hole of holes) {
+                    hole.classList.remove("red");
+                    hole.classList.remove("blue");
+                }
+                // 啟用START按鈕
+                btnStart.disabled = false;
+                alert(`你得到${score}分`);
+
+                // 如果沒有分數紀錄，或是大於目前分數
+                if (storage == null || score > highscore.score) {
+                    rihai.play();
+                    const input = prompt("恭喜您最高分，請輸入名字")
+                    // 如果不按取消且有輸入東西
+                    if (input !== null && input.trim() !== '') {
+                        // 將輸入的名字與分數存入變數
+                        highscore.score = score;
+                        highscore.name = input;
+                        // 修改最高分名字與分數之文字
+                        textHighPlayer.innerText = highscore.name;
+                        textHighscore.innerText = highscore.score;
+                        // 將最高分變數轉為文字後存入localstorage
+                        localStorage.setItem("highscore", JSON.stringify(highscore));
+                    }
+                }
+            }
+
+        }
+
+        for (let hole of holes) {
+            hole.onclick = () => {
+                hole.style.cursor = `url(./ami2.png) 50 50, auto`
+                swing.play();
+                // 如果在遊戲中且包含red
+                if (inGame && hole.classList.contains("red")) {
+                    // 標記為按下去
+                    hole.classList.add("blue");
+                    hole.classList.remove("red");
+                    // 加一分
+                    score++;
+                    textScore.innerText = score;
+                }
+                setTimeout(() => {
+                    hole.style.cursor = `url(./ami.png) 50 50, auto`
+                }, 100)
+
+            }
+        }
+
+        // 用數字鍵盤遊玩
+        document.onkeydown = (event) => {
+            const key = event.key;
+            // 如果在遊戲中，且按鍵數字為1~9
+            if (!isNaN(key) && inGame && key > 0 && key < 10) {
+                // 找到對應的格子，`hole${key}`尋找hole1~hole9
+                const target = document.getElementById(`hole${key}`);
+                // 觸發上面寫好的點擊事件
+                target.click();
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>
