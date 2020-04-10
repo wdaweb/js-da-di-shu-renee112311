@@ -179,6 +179,8 @@
         const textHighPlayer = document.getElementById("text-highplayer");
         const textHighscore = document.getElementById("text-highscore");
         // 音效
+        const disco = new Audio();
+        disco.src = "./KKDisco.mp3"
         const rihai = new Audio();
         rihai.src = "./rihai.mp3"
         const swing = new Audio();
@@ -207,6 +209,8 @@
             highscore.score = storage.score;
             textHighscore.innerText = highscore.score;
         }
+
+        disco.play();
 
         btnStart.onclick = () => {
             // 遊戲開始後，START就要停用
@@ -241,6 +245,7 @@
             for (let i = 0; i < 2; i++) {
                 const rand = Math.floor(Math.random() * 9);
                 holes[rand].classList.add("green");
+                holes[rand].classList.remove("red");
             }
             // 時間減一
             timeLeft--;
