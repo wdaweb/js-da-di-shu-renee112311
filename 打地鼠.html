@@ -19,6 +19,13 @@
             text-shadow: 0 0 5px rgb(4, 85, 81);
         }
 
+        #dhk {
+            text-align: center;
+            font-size: 18px;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            color: white;
+        }
+
         .container {
             width: 900px;
             margin: auto;
@@ -80,6 +87,14 @@
             background: url(./bunny2.png) center;
         }
 
+        .green {
+            background: url(./Katt.png) center;
+        }
+
+        .bubu {
+            background: url(./Katt2.png) center;
+        }
+
 
 
 
@@ -120,6 +135,7 @@
 
 <body>
     <p class="animation">Catch the easter BUNNY!</p>
+    <div id="dhk">And don't hurt Katt!</div>
     <div class="container">
         <div id="boxLeft" class="boxs">
             目前分數：<span id="text-score">0</span><br>
@@ -148,7 +164,7 @@
             <input type="button" value="START" id="btn-start"><br>
         </div>
         <div id="boxRight" class="boxs">
-            最高分：<br>
+            最高分<br>
             玩家：<span id="text-highplayer">沒有人</span><br>
             分數：<span id="text-highscore">0</span>
         </div>
@@ -167,6 +183,10 @@
         rihai.src = "./rihai.mp3"
         const swing = new Audio();
         swing.src = "./swing.mp3"
+        const brow = new Audio();
+        brow.src = "./brow.mp3"
+        const wrong = new Audio();
+        wrong.src = "./fxNO.mp3"
 
         let score = 0;
         // 是否在遊戲中
@@ -209,11 +229,18 @@
             for (let hole of holes) {
                 hole.classList.remove("red");
                 hole.classList.remove("blue");
+                hole.classList.remove("green");
+                hole.classList.remove("bubu");
             }
             // 隨機抽三格變紅色
             for (let i = 0; i < 3; i++) {
                 const rand = Math.floor(Math.random() * 9);
                 holes[rand].classList.add("red");
+            }
+            // 隨機抽兩格變綠色(扣分)
+            for (let i = 0; i < 2; i++) {
+                const rand = Math.floor(Math.random() * 9);
+                holes[rand].classList.add("green");
             }
             // 時間減一
             timeLeft--;
@@ -229,6 +256,8 @@
                 for (let hole of holes) {
                     hole.classList.remove("red");
                     hole.classList.remove("blue");
+                    hole.classList.remove("green");
+                    hole.classList.remove("bubu");
                 }
                 // 啟用START按鈕
                 btnStart.disabled = false;
@@ -260,11 +289,22 @@
                 swing.play();
                 // 如果在遊戲中且包含red
                 if (inGame && hole.classList.contains("red")) {
+                    brow.play();
                     // 標記為按下去
                     hole.classList.add("blue");
                     hole.classList.remove("red");
                     // 加一分
                     score++;
+                    textScore.innerText = score;
+                }
+                // 如果在遊戲中且包含green
+                if (inGame && hole.classList.contains("green")) {
+                    wrong.play();
+                    // 標記為按下去
+                    hole.classList.add("bubu");
+                    hole.classList.remove("green");
+                    // 加一分
+                    score--;
                     textScore.innerText = score;
                 }
                 setTimeout(() => {
